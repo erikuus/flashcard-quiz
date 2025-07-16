@@ -6,7 +6,7 @@
       <p class="text-lg text-slate-600">Focus. Learn. Master.</p>
     </div>
 
-    <%= if @flashcards_empty? do %>
+    <%= if @flashcards == [] do %>
       <!-- Empty State -->
       <div class="text-center">
         <div class="text-slate-600 mb-6">No flashcards available yet.</div>
@@ -18,123 +18,109 @@
         </a>
       </div>
     <% else %>
-      <%= if @quiz_complete do %>
-        <!-- Quiz Complete -->
-        <div class="w-full max-w-md text-center">
-          <div class="bg-white rounded-2xl shadow-lg border border-slate-200 p-8 mb-8">
-            <h2 class="text-2xl font-medium text-slate-800 mb-4">Quiz Complete!</h2>
-            <div class="text-lg text-slate-600 mb-6">
-              Final Score: {@score}/{@total_answered}
-            </div>
-            <button
-              phx-click="reset_quiz"
-              class="px-6 py-3 bg-slate-700 text-white rounded-lg hover:bg-slate-800 transition-colors font-medium"
-            >
-              Start Over
-            </button>
-          </div>
-        </div>
-      <% else %>
-        <!-- Main Quiz Interface -->
-        <div class="w-full max-w-2xl">
-          <!-- Flashcard Display -->
-          <div class="bg-white rounded-2xl shadow-lg border border-slate-200 p-8 mb-8 min-h-[320px] flex items-center justify-center">
-            <div class="text-center w-full">
-              <%= if length(@flashcards) > 0 do %>
-                <% card = Enum.at(@flashcards, @current_index) %>
-                <%= if @showing_answer do %>
-                  <div class="prose prose-slate max-w-none text-slate-800 mb-6">
-                    <div phx-no-format>
-                      {raw(markdown_to_html(card.back))}
-                    </div>
+      <!-- Main Quiz Interface -->
+      <div class="w-full max-w-2xl">
+        <!-- Flashcard Display -->
+        <div class="bg-white rounded-2xl shadow-lg border border-slate-200 p-8 mb-8 min-h-[320px] flex items-center justify-center">
+          <div class="text-center w-full">
+            <%= if length(@flashcards) > 0 do %>
+              <% card = Enum.at(@flashcards, @current_index) %>
+              <%= if @show_answer do %>
+                <div class="prose prose-slate max-w-none text-slate-800 mb-6">
+                  <div phx-no-format>
+                    {raw(markdown_to_html(card.back))}
                   </div>
-                  <button
-                    phx-click="flip_card"
-                    class="px-6 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-800 transition-colors font-medium"
-                  >
-                    Show Question
-                  </button>
-                <% else %>
-                  <div class="prose prose-slate max-w-none text-slate-800 mb-6">
-                    <div phx-no-format>
-                      {raw(markdown_to_html(card.front))}
-                    </div>
+                </div>
+                <button
+                  phx-click="flip_card"
+                  class="px-6 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-800 transition-colors font-medium"
+                >
+                  Show Question
+                </button>
+              <% else %>
+                <div class="prose prose-slate max-w-none text-slate-800 mb-6">
+                  <div phx-no-format>
+                    {raw(markdown_to_html(card.front))}
                   </div>
-                  <button
-                    phx-click="flip_card"
-                    class="px-6 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-800 transition-colors font-medium"
-                  >
-                    Show Answer
-                  </button>
-                <% end %>
+                </div>
+                <button
+                  phx-click="flip_card"
+                  class="px-6 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-800 transition-colors font-medium"
+                >
+                  Show Answer
+                </button>
               <% end %>
-            </div>
-          </div>
-          
-<!-- Progress Bar -->
-          <div class="mb-6">
-            <div class="flex justify-between text-sm text-slate-600 mb-2">
-              <span>Card {@current_index + 1} of {length(@flashcards)}</span>
-              <span>Score: {@score}/{@total_answered}</span>
-            </div>
-            <div class="w-full bg-slate-200 rounded-full h-2">
-              <div
-                class="bg-slate-700 h-2 rounded-full transition-all duration-300"
-                style={"width: #{if length(@flashcards) > 0, do: (@current_index + 1) / length(@flashcards) * 100, else: 0}%"}
-              >
-              </div>
-            </div>
-          </div>
-          
-<!-- Action Buttons (only show when answer is visible) -->
-          <%= if @showing_answer do %>
-            <div class="flex gap-3 mb-8">
-              <button
-                phx-click="mark_incorrect"
-                class="flex-1 px-4 py-3 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors font-medium"
-              >
-                Incorrect
-              </button>
-              <button
-                phx-click="mark_correct"
-                class="flex-1 px-4 py-3 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors font-medium"
-              >
-                Correct
-              </button>
-            </div>
-          <% end %>
-          
-<!-- Navigation -->
-          <div class="flex gap-3">
-            <button
-              phx-click="previous_card"
-              disabled={@current_index == 0}
-              class={[
-                "flex-1 px-4 py-2 rounded-lg transition-colors",
-                if(@current_index == 0,
-                  do: "border border-slate-200 text-slate-400 cursor-not-allowed",
-                  else: "border border-slate-300 text-slate-700 hover:bg-slate-50"
-                )
-              ]}
-            >
-              Previous
-            </button>
-            <button
-              phx-click="next_card"
-              disabled={@current_index >= length(@flashcards) - 1}
-              class={[
-                "flex-1 px-4 py-2 rounded-lg transition-colors",
-                if(@current_index >= length(@flashcards) - 1,
-                  do: "bg-slate-400 text-white cursor-not-allowed",
-                  else: "bg-slate-700 text-white hover:bg-slate-800"
-                )
-              ]}
-            >
-              Next Card
-            </button>
+            <% end %>
           </div>
         </div>
-      <% end %>
+        
+<!-- Progress Bar -->
+        <div class="mb-6">
+          <div class="flex justify-between text-sm text-slate-600 mb-2">
+            <span>
+              Card {if length(@flashcards) > 0, do: @current_index + 1, else: 0} of {length(
+                @flashcards
+              )}
+            </span>
+            <span>Score: {@score}/{@answered_count}</span>
+          </div>
+          <div class="w-full bg-slate-200 rounded-full h-2">
+            <div
+              class="bg-slate-700 h-2 rounded-full transition-all duration-300"
+              style={"width: #{if length(@flashcards) > 0, do: (@current_index + 1) / length(@flashcards) * 100, else: 0}%"}
+            >
+            </div>
+          </div>
+        </div>
+        
+<!-- Action Buttons (only show when answer is visible) -->
+        <%= if @show_answer do %>
+          <div class="flex gap-3 mb-8">
+            <button
+              phx-click="mark_incorrect"
+              class="flex-1 px-4 py-3 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors font-medium"
+            >
+              Incorrect
+            </button>
+            <button
+              phx-click="mark_correct"
+              class="flex-1 px-4 py-3 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors font-medium"
+            >
+              Correct
+            </button>
+          </div>
+        <% end %>
+        
+<!-- Navigation -->
+        <div class="flex gap-3">
+          <button
+            phx-click="previous_card"
+            disabled={@current_index == 0}
+            class={[
+              "flex-1 px-4 py-2 rounded-lg transition-colors",
+              if(@current_index == 0,
+                do: "border border-slate-200 text-slate-400 cursor-not-allowed",
+                else: "border border-slate-300 text-slate-700 hover:bg-slate-50"
+              )
+            ]}
+          >
+            Previous
+          </button>
+          <button
+            phx-click="next_card"
+            disabled={@current_index >= length(@flashcards) - 1}
+            class={[
+              "flex-1 px-4 py-2 rounded-lg transition-colors",
+              if(@current_index >= length(@flashcards) - 1,
+                do: "bg-slate-400 text-white cursor-not-allowed",
+                else: "bg-slate-700 text-white hover:bg-slate-800"
+              )
+            ]}
+          >
+            Next Card
+          </button>
+        </div>
+      </div>
     <% end %>
     
 <!-- Bottom Actions -->

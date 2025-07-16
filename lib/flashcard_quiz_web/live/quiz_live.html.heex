@@ -36,14 +36,18 @@
         </div>
       <% else %>
         <!-- Main Quiz Interface -->
-        <div class="w-full max-w-md">
+        <div class="w-full max-w-2xl">
           <!-- Flashcard Display -->
-          <div class="bg-white rounded-2xl shadow-lg border border-slate-200 p-8 mb-8 min-h-[280px] flex items-center justify-center">
-            <div class="text-center">
+          <div class="bg-white rounded-2xl shadow-lg border border-slate-200 p-8 mb-8 min-h-[320px] flex items-center justify-center">
+            <div class="text-center w-full">
               <%= if length(@flashcards) > 0 do %>
                 <% card = Enum.at(@flashcards, @current_index) %>
                 <%= if @showing_answer do %>
-                  <div class="text-2xl font-medium text-slate-800 mb-4">{card.back}</div>
+                  <div class="prose prose-slate max-w-none text-slate-800 mb-6">
+                    <div phx-no-format>
+                      {raw(markdown_to_html(card.back))}
+                    </div>
+                  </div>
                   <button
                     phx-click="flip_card"
                     class="px-6 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-800 transition-colors font-medium"
@@ -51,7 +55,11 @@
                     Show Question
                   </button>
                 <% else %>
-                  <div class="text-2xl font-medium text-slate-800 mb-4">{card.front}</div>
+                  <div class="prose prose-slate max-w-none text-slate-800 mb-6">
+                    <div phx-no-format>
+                      {raw(markdown_to_html(card.front))}
+                    </div>
+                  </div>
                   <button
                     phx-click="flip_card"
                     class="px-6 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-800 transition-colors font-medium"

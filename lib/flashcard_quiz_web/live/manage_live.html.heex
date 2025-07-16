@@ -1,56 +1,161 @@
 <Layouts.app flash={@flash}>
-  <div class="min-h-screen bg-slate-50 p-6">
+  <div class="min-h-screen bg-slate-50 p-8">
     <div class="max-w-4xl mx-auto">
       <!-- Header -->
-      <div class="text-center mb-12">
-        <h1 class="text-4xl font-light text-slate-800 mb-4">Manage Flashcards</h1>
-        <p class="text-lg text-slate-600">Create and organize your study materials</p>
+      <div class="mb-8">
+        <h1 class="text-3xl font-light text-slate-800 mb-2">Manage Flashcards</h1>
+        <p class="text-slate-600">Create and organize your study materials</p>
+        <div class="flex gap-4 mt-4">
+          <.link navigate="/packs" class="text-blue-600 hover:text-blue-700 text-sm font-medium">
+            📚 Manage Packs
+          </.link>
+          <.link navigate="/quiz" class="text-green-600 hover:text-green-700 text-sm font-medium">
+            🧠 Start Quiz
+          </.link>
+        </div>
       </div>
+
+      <!-- Pack Filter Info -->
+      <%= if @current_pack_id do %>
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="text-blue-800 font-medium">📚 Viewing pack:</span>
+              <span class="text-blue-700">
+                <%= Enum.find(@packs, &(&1.id == String.to_integer(@current_pack_id)))&.name || "Unknown Pack" %>
+              </span>
+            </div>
+            <.link navigate="/manage" class="text-blue-600 hover:text-blue-700 text-sm font-medium">
+              View All Cards
+            </.link>
+          </div>
+        </div>
+      <% end %>
       
-<!-- Add/Edit Form -->
-      <div class="bg-white rounded-2xl shadow-lg border border-slate-200 p-8 mb-8">
-        <h2 class="text-2xl font-medium text-slate-800 mb-6">
+      <!-- Flashcard Form -->
+      <div class="bg-white rounded-lg shadow-sm border border-slate-200 p-6 mb-8">
+        <h2 class="text-lg font-medium text-slate-800 mb-4">
+          {if @editing_id, do: "Edit Flashcard", else: "Create New Flashcard"}
+        </h2>
+
+        <.form
+          for={@form}
+          id="flashcard-form"
+          phx-change="validate"
+          phx-submit="save"
+          class="space-y-4"
+        >
+          <!-- Pack Selection -->
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-2">Pack</label>
+            <.input
+              field={@form[:pack_id]}
+              type="select"
+              options={[{"Select a pack", ""} | Enum.map(@packs, &{&1.name, &1.id})]}
+              class="w-full px-4 py-3 rounded-lg bg-white border border-slate-300 text-slate-800 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+              error_class="border-red-400 focus:border-red-500 focus:ring focus:ring-red-300"
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-2">Question (<Layouts.app flash={@flash}>
+  <div class="min-h-screen bg-slate-50 p-8">
+    <div class="max-w-4xl mx-auto">
+      <!-- Header with Pack Info -->
+      <div class="mb-8">
+        <%= if @current_pack_id do %>
+          <% pack = Enum.find(@packs, &(&1.id == String.to_integer(@current_pack_id))) %>
+          <div class="mb-4">
+            <.link navigate="/packs" class="text-blue-600 hover:text-blue-700 text-sm font-medium">
+              ← Back to Packs
+            </.link>
+          </div>
+          <h1 class="text-3xl font-light text-slate-800 mb-2">
+            Flashcards: {pack && pack.name || "Unknown Pack"}
+          </h1>
+          <p class="text-slate-600">Manage flashcards in this pack</p>
+        <% else %>
+          <h1 class="text-3xl font-light text-slate-800 mb-2">All Flashcards</h1>
+          <p class="text-slate-600">Manage your flashcards across all packs</p>
+          <div class="mt-4">
+            <.link navigate="/packs" class="text-blue-600 hover:text-blue-700 text-sm font-medium">
+              → Manage Packs
+            </.link>
+          </div>
+        <% end %>
+      </div>
+
+      <!-- Flashcard Form -->
+      <div class="bg-white rounded-lg shadow-sm border border-slate-200 p-6 mb-8">
+        <h2 class="text-lg font-medium text-slate-800 mb-4">
           {if @editing_id, do: "Edit Flashcard", else: "Add New Flashcard"}
         </h2>
 
-        <.form for={@form} id="flashcard-form" phx-change="validate" phx-submit="save">
-          <div class="space-y-6">
+        <.form
+          for={@form}
+          id="flashcard-form"
+          phx-change="validate"
+          phx-submit="save"
+          class="space-y-4"
+        >
+          <!-- Pack Selection (only show if not filtering by pack) -->
+          <%= if !@current_pack_id do %>
             <div>
-              <.input
-                field={@form[:front]}
-                type="textarea"
-                label="Question (Front)"
-                placeholder="Enter your question or prompt here..."
-                class="w-full px-4 py-3 bg-slate-50 text-slate-800 placeholder:text-slate-500 border border-slate-200 rounded-lg focus:border-slate-400 focus:ring focus:ring-slate-200 focus:ring-opacity-50 resize-none"
-                rows="3"
-              />
+              <label class="block text-sm font-medium text-slate-700 mb-2">Pack</label>
+              <select 
+                name="flashcard[pack_id]" 
+                class="w-full px-4 py-3 rounded-lg bg-white border border-slate-300 text-slate-800 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+              >
+                <option value="">Select a pack...</option>
+                <%= for pack <- @packs do %>
+                  <option value={pack.id} selected={@form[:pack_id].value == pack.id}>
+                    {pack.name}
+                  </option>
+                <% end %>
+              </select>
             </div>
+          <% else %>
+            <!-- Hidden field for current pack -->
+            <input type="hidden" name="flashcard[pack_id]" value={@current_pack_id} />
+          <% end %>
 
-            <div>
-              <.input
-                field={@form[:back]}
-                type="textarea"
-                label="Answer (Back)"
-                placeholder="Enter the answer or explanation here. Use ```elixir for code blocks..."
-                class="w-full px-4 py-3 bg-slate-50 text-slate-800 placeholder:text-slate-500 border border-slate-200 rounded-lg focus:border-slate-400 focus:ring focus:ring-slate-200 focus:ring-opacity-50 resize-none"
-                rows="8"
-              />
-            </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-2">Question (Front)</label>
+            <.input
+              field={@form[:front]}
+              type="textarea"
+              placeholder="Enter your question..."
+              rows="3"
+              class="w-full px-4 py-3 rounded-lg bg-white border border-slate-300 text-slate-800 placeholder:text-slate-500 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 resize-none"
+              error_class="border-red-400 focus:border-red-500 focus:ring focus:ring-red-300"
+            />
           </div>
 
-          <div class="flex gap-3 mt-8">
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-2">Answer (Back)</label>
+            <.input
+              field={@form[:back]}
+              type="textarea"
+              placeholder="Enter your answer (supports markdown and code blocks)..."
+              rows="8"
+              class="w-full px-4 py-3 rounded-lg bg-white border border-slate-300 text-slate-800 placeholder:text-slate-500 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 resize-none font-mono text-sm"
+              error_class="border-red-400 focus:border-red-500 focus:ring focus:ring-red-300"
+            />
+          </div>
+
+          <div class="flex gap-3">
             <button
               type="submit"
-              class="px-6 py-3 bg-slate-700 text-white rounded-lg hover:bg-slate-800 transition-colors font-medium"
+              class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
             >
-              {if @editing_id, do: "Update Card", else: "Add Card"}
+              {if @editing_id, do: "Update Flashcard", else: "Add Flashcard"}
             </button>
 
             <%= if @editing_id do %>
               <button
                 type="button"
                 phx-click="cancel"
-                class="px-6 py-3 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors font-medium"
+                class="px-6 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-medium rounded-lg transition-colors"
               >
                 Cancel
               </button>
@@ -58,41 +163,59 @@
           </div>
         </.form>
       </div>
-      
-<!-- Flashcards List -->
-      <%= if @flashcards_empty? do %>
-        <div class="bg-white rounded-2xl shadow-lg border border-slate-200 p-12 text-center">
-          <div class="text-slate-600 mb-4">No flashcards created yet.</div>
-          <div class="text-sm text-slate-500">
-            Create your first flashcard using the form above!
-          </div>
-        </div>
-      <% else %>
-        <div class="bg-white rounded-2xl shadow-lg border border-slate-200 p-8">
-          <h2 class="text-2xl font-medium text-slate-800 mb-6">Your Flashcards</h2>
 
-          <div class="space-y-4">
+      <!-- Flashcards List -->
+      <div class="bg-white rounded-lg shadow-sm border border-slate-200">
+        <div class="p-6 border-b border-slate-200">
+          <h2 class="text-lg font-medium text-slate-800">
+            <%= if @current_pack_id do %>
+              Flashcards in This Pack
+            <% else %>
+              All Flashcards
+            <% end %>
+          </h2>
+        </div>
+
+        <%= if @flashcards_empty? do %>
+          <div class="p-8 text-center">
+            <div class="text-slate-400 mb-2">📚</div>
+            <p class="text-slate-600 mb-1">No flashcards yet</p>
+            <p class="text-sm text-slate-500">
+              <%= if @current_pack_id do %>
+                Add your first flashcard to this pack
+              <% else %>
+                Create a pack and add your first flashcard
+              <% end %>
+            </p>
+          </div>
+        <% else %>
+          <div class="divide-y divide-slate-200">
             <%= for flashcard <- @flashcards do %>
-              <div class="border border-slate-200 rounded-lg p-6 hover:bg-slate-50 transition-colors">
-                <div class="flex justify-between items-start">
-                  <div class="flex-1">
-                    <div class="text-sm font-medium text-slate-600 mb-2">Question:</div>
-                    <div class="text-slate-800 text-lg leading-relaxed">{flashcard.front}</div>
+              <div class="p-6 hover:bg-slate-50 transition-colors">
+                <div class="flex items-start justify-between">
+                  <div class="flex-1 pr-4">
+                    <p class="text-slate-800 font-medium mb-2">{flashcard.front}</p>
+                    <%= if !@current_pack_id && flashcard.pack do %>
+                      <span class="inline-block px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded-full">
+                        {flashcard.pack.name}
+                      </span>
+                    <% end %>
                   </div>
 
-                  <div class="flex gap-2 ml-6">
+                  <div class="flex items-center gap-3">
                     <button
                       phx-click="edit"
                       phx-value-id={flashcard.id}
-                      class="px-3 py-2 text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors text-sm"
+                      class="text-sm text-blue-600 hover:text-blue-700 font-medium"
                     >
                       Edit
                     </button>
+
                     <button
                       phx-click="delete"
                       phx-value-id={flashcard.id}
-                      data-confirm="Are you sure you want to delete this flashcard?"
-                      class="px-3 py-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-colors text-sm"
+                      data-confirm="Are you sure?"
+                      class="text-sm text-red-600 hover:text-red-700 font-medium"
                     >
                       Delete
                     </button>
@@ -101,18 +224,30 @@
               </div>
             <% end %>
           </div>
+        <% end %>
+      </div>
+
+      <!-- Quiz Actions -->
+      <%= if !@flashcards_empty? do %>
+        <div class="mt-8 flex gap-4">
+          <%= if @current_pack_id do %>
+            <.link
+              navigate={"/quiz?pack_id=#{@current_pack_id}"}
+              class="px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors"
+            >
+              Start Quiz for This Pack
+            </.link>
+          <% else %>
+            <.link
+              navigate="/quiz"
+              class="px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors"
+            >
+              Start Quiz (All Cards)
+            </.link>
+          <% end %>
         </div>
       <% end %>
-      
-<!-- Bottom Actions -->
-      <div class="mt-12 text-center">
-        <a
-          href="/"
-          class="px-6 py-2 text-slate-600 hover:text-slate-800 transition-colors underline"
-        >
-          Back to Quiz
-        </a>
-      </div>
     </div>
   </div>
 </Layouts.app>
+

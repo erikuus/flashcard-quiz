@@ -4,15 +4,47 @@ defmodule FlashcardQuizWeb.ManageLive do
   alias FlashcardQuiz.Flashcards
   alias FlashcardQuiz.Flashcards.Flashcard
 
-  def mount(_params, _session, socket) do
-    flashcards = Flashcards.list_flashcards()
+  def mount(params, _session, socket) do
+    pack_id = params["pack_id"]
+
+    flashcards =
+      if pack_id,
+        do: Flashcards.list_flashcards(pack_id: pack_id),
+        else: Flashcards.list_flashcards()
+
+    packs = Flashcards.list_packs()
     changeset = Flashcards.change_flashcard(%Flashcard{})
+
+    # Set default pack_id if filtering by pack
+    changeset =
+      if pack_id do
+        changeset |> Ecto.Changeset.put_change(:pack_id, String.to_integer(pack_id))
+      else
+        changeset
+      end
 
     {:ok,
      socket
      |> assign(:flashcards, flashcards)
+     |> assign(:packs, packs)
      |> assign(:form, to_form(changeset))
      |> assign(:editing_id, nil)
+     |> assign(:current_pack_id, pack_id)
+     |> assign(:flashcards_empty?, flashcards == [])}
+  end
+
+  def handle_params(params, _url, socket) do
+    pack_id = params["pack_id"]
+
+    flashcards =
+      if pack_id,
+        do: Flashcards.list_flashcards(pack_id: pack_id),
+        else: Flashcards.list_flashcards()
+
+    {:noreply,
+     socket
+     |> assign(:flashcards, flashcards)
+     |> assign(:current_pack_id, pack_id)
      |> assign(:flashcards_empty?, flashcards == [])}
   end
 
@@ -45,6 +77,15 @@ defmodule FlashcardQuizWeb.ManageLive do
   def handle_event("cancel", _params, socket) do
     changeset = Flashcards.change_flashcard(%Flashcard{})
 
+    # Restore default pack_id if filtering by pack
+    changeset =
+      if socket.assigns.current_pack_id do
+        changeset
+        |> Ecto.Changeset.put_change(:pack_id, String.to_integer(socket.assigns.current_pack_id))
+      else
+        changeset
+      end
+
     {:noreply,
      socket
      |> assign(:form, to_form(changeset))
@@ -55,7 +96,12 @@ defmodule FlashcardQuizWeb.ManageLive do
     flashcard = Flashcards.get_flashcard!(id)
     {:ok, _} = Flashcards.delete_flashcard(flashcard)
 
-    flashcards = Flashcards.list_flashcards()
+    pack_id = socket.assigns.current_pack_id
+
+    flashcards =
+      if pack_id,
+        do: Flashcards.list_flashcards(pack_id: pack_id),
+        else: Flashcards.list_flashcards()
 
     {:noreply,
      socket
@@ -68,7 +114,25 @@ defmodule FlashcardQuizWeb.ManageLive do
     case Flashcards.create_flashcard(flashcard_params) do
       {:ok, _flashcard} ->
         changeset = Flashcards.change_flashcard(%Flashcard{})
-        flashcards = Flashcards.list_flashcards()
+
+        # Restore default pack_id if filtering by pack
+        changeset =
+          if socket.assigns.current_pack_id do
+            changeset
+            |> Ecto.Changeset.put_change(
+              :pack_id,
+              String.to_integer(socket.assigns.current_pack_id)
+            )
+          else
+            changeset
+          end
+
+        pack_id = socket.assigns.current_pack_id
+
+        flashcards =
+          if pack_id,
+            do: Flashcards.list_flashcards(pack_id: pack_id),
+            else: Flashcards.list_flashcards()
 
         {:noreply,
          socket
@@ -88,7 +152,25 @@ defmodule FlashcardQuizWeb.ManageLive do
     case Flashcards.update_flashcard(flashcard, flashcard_params) do
       {:ok, _flashcard} ->
         changeset = Flashcards.change_flashcard(%Flashcard{})
-        flashcards = Flashcards.list_flashcards()
+
+        # Restore default pack_id if filtering by pack
+        changeset =
+          if socket.assigns.current_pack_id do
+            changeset
+            |> Ecto.Changeset.put_change(
+              :pack_id,
+              String.to_integer(socket.assigns.current_pack_id)
+            )
+          else
+            changeset
+          end
+
+        pack_id = socket.assigns.current_pack_id
+
+        flashcards =
+          if pack_id,
+            do: Flashcards.list_flashcards(pack_id: pack_id),
+            else: Flashcards.list_flashcards()
 
         {:noreply,
          socket

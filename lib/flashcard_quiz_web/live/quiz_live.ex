@@ -9,7 +9,7 @@ defmodule FlashcardQuizWeb.QuizLive do
 
     flashcards =
       if pack_id do
-        Flashcards.list_flashcards_by_pack(String.to_integer(pack_id))
+        Flashcards.list_flashcards(pack_id: String.to_integer(pack_id))
       else
         Flashcards.list_flashcards()
       end

@@ -18,6 +18,7 @@ defmodule FlashcardQuizWeb.Router do
     pipe_through :browser
 
     live "/", QuizLive
+    live "/packs", PacksLive
     live "/manage", ManageLive
   end
 

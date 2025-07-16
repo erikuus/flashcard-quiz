@@ -14,28 +14,35 @@
           </.link>
         </div>
       </div>
-
-      <!-- Pack Filter Info -->
+      
+<!-- Pack Filter Info -->
       <%= if @current_pack_id do %>
         <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-2">
               <span class="text-blue-800 font-medium">📚 Viewing pack:</span>
               <span class="text-blue-700">
-                <%= Enum.find(@packs, &(&1.id == String.to_integer(@current_pack_id)))&.name || "Unknown Pack" %>
+                {Enum.find(@packs, &(&1.id == String.to_integer(@current_pack_id)))
+                |> case do
+                  nil -> nil
+                  pack -> pack.name
+                end || "Unknown Pack"}
               </span>
             </div>
-            <.link navigate="/manage" class="text-blue-600 hover:text-blue-700 text-sm font-medium">
+            <.link
+              navigate="/manage"
+              class="text-blue-600 hover:text-blue-700 text-sm font-medium"
+            >
               View All Cards
             </.link>
           </div>
         </div>
       <% end %>
       
-      <!-- Flashcard Form -->
+<!-- Flashcard Form -->
       <div class="bg-white rounded-lg shadow-sm border border-slate-200 p-6 mb-8">
         <h2 class="text-lg font-medium text-slate-800 mb-4">
-          <%= if @editing_id, do: "Edit Flashcard", else: "Create New Flashcard" %>
+          {if @editing_id, do: "Edit Flashcard", else: "Create New Flashcard"}
         </h2>
 
         <.form
@@ -86,7 +93,7 @@
               type="submit"
               class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
             >
-              <%= if @editing_id, do: "Update Flashcard", else: "Add Flashcard" %>
+              {if @editing_id, do: "Update Flashcard", else: "Add Flashcard"}
             </button>
 
             <%= if @editing_id do %>
@@ -101,8 +108,8 @@
           </div>
         </.form>
       </div>
-
-      <!-- Flashcards List -->
+      
+<!-- Flashcards List -->
       <div class="bg-white rounded-lg shadow-sm border border-slate-200">
         <div class="p-6 border-b border-slate-200">
           <h2 class="text-lg font-medium text-slate-800">
@@ -132,10 +139,10 @@
               <div class="p-6 hover:bg-slate-50 transition-colors">
                 <div class="flex items-start justify-between">
                   <div class="flex-1 pr-4">
-                    <p class="text-slate-800 font-medium mb-2"><%= flashcard.front %></p>
+                    <p class="text-slate-800 font-medium mb-2">{flashcard.front}</p>
                     <%= if !@current_pack_id && flashcard.pack do %>
                       <span class="inline-block px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded-full">
-                        <%= flashcard.pack.name %>
+                        {flashcard.pack.name}
                       </span>
                     <% end %>
                   </div>
@@ -164,8 +171,8 @@
           </div>
         <% end %>
       </div>
-
-      <!-- Quiz Actions -->
+      
+<!-- Quiz Actions -->
       <%= if !@flashcards_empty? do %>
         <div class="mt-8 flex gap-4">
           <%= if @current_pack_id do %>

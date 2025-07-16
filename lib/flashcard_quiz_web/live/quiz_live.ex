@@ -106,6 +106,20 @@ defmodule FlashcardQuizWeb.QuizLive do
   end
 
   defp current_card(flashcards, index) do
+
+  defp markdown_to_html(text) do
+    text
+    |> String.replace(~r/```elixir
+(.*?)
+```/s, "<pre class="bg-slate-100 p-4 rounded-lg overflow-x-auto"><code class="language-elixir text-sm">\1</code></pre>")
+    |> String.replace(~r/```(w+)?
+(.*?)
+```/s, "<pre class="bg-slate-100 p-4 rounded-lg overflow-x-auto"><code class="text-sm">\2</code></pre>")
+    |> String.replace(~r/`([^`]+)`/, "<code class="bg-slate-100 px-1 py-0.5 rounded text-sm">\1</code>")
+    |> String.replace(~r/**(.*?)**/, "<strong>\1</strong>")
+    |> String.replace(~r/*(.*?)*/, "<em>\1</em>")
+    |> String.replace("
+", "<br>")
     Enum.at(flashcards, index)
   end
 end

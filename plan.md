@@ -1,38 +1,38 @@
 # Flashcard Quiz Plan
 
 - [x] Generate a Phoenix LiveView project called `flashcard_quiz`
-- [ ] Start the server so you can view the app as we build it
-- [ ] Replace `home.html.heex` with a static mockup of our planned design
-- [ ] Create migration for flashcards table with front/back text fields
-- [ ] Implement the Flashcards context module with CRUD operations:
+- [x] Start the server so you can view the app as we build it
+- [x] Replace `home.html.heex` with a static mockup of our planned design
+- [x] Create migration for flashcards table with front/back text fields
+- [x] Implement the Flashcards context module with CRUD operations:
   - create_flashcard/1 - creates a new flashcard
   - list_flashcards/0 - lists all flashcards  
   - get_flashcard!/1 - gets a single flashcard
   - update_flashcard/2 - updates a flashcard
   - delete_flashcard/1 - deletes a flashcard
-- [ ] Create QuizLive LiveView with the following features:
+- [x] Create QuizLive LiveView with the following features:
   - Quiz state management (current card, score, total cards)
   - Card flipping animations with CSS transitions
   - Progress tracking through the deck
   - Real-time score updates via PubSub
   - Navigation between cards (next/previous)
-- [ ] Create QuizLive template with minimalist study focus design:
+- [x] Create QuizLive template with minimalist study focus design:
   - Clean card display with front/back content
   - Flip button with smooth transitions
   - Progress indicator
   - Score display
   - Wrap content in `<Layouts.app flash={@flash}>...</Layouts.app>`
-- [ ] Create ManageLive LiveView for flashcard management:
+- [x] Create ManageLive LiveView for flashcard management:
   - Form for creating/editing flashcards
   - List view of existing flashcards
   - Edit/delete actions for each card
-- [ ] Create ManageLive template with management interface
-- [ ] Update layouts to match minimalist study focus design:
+- [x] Create ManageLive template with management interface
+- [x] Update layouts to match minimalist study focus design:
   - Force light theme in `root.html.heex`
   - Remove theme switcher from `<Layouts.app>`
   - Update `app.css` with calming, focused color scheme
-- [ ] Update router with new routes:
+- [x] Update router with new routes:
   - Remove placeholder home route `get "/"`
   - Add quiz route as new root: `live "/", QuizLive`
   - Add management route: `live "/manage", ManageLive`
-- [ ] Visit the app with `web` to verify everything is working
+- [x] Visit the app with `web` to verify everything is working

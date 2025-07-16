@@ -17,7 +17,8 @@ defmodule FlashcardQuizWeb.Router do
   scope "/", FlashcardQuizWeb do
     pipe_through :browser
 
-    get "/", PageController, :home
+    live "/", QuizLive
+    live "/manage", ManageLive
   end
 
   # Other scopes may use custom stacks.

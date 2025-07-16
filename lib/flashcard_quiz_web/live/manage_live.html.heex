@@ -22,7 +22,7 @@
             <div class="flex items-center gap-2">
               <span class="text-blue-800 font-medium">📚 Viewing pack:</span>
               <span class="text-blue-700">
-                <%= (Enum.find(@packs, &(&1.id == String.to_integer(@current_pack_id))))&.name || "Unknown Pack" %>
+                {Enum.find(@packs, &(&1.id == String.to_integer(@current_pack_id)))&.name || "Unknown Pack"}
               </span>
             </div>
             <.link navigate="/manage" class="text-blue-600 hover:text-blue-700 text-sm font-medium">

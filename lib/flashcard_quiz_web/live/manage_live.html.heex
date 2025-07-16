@@ -58,68 +58,6 @@
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-slate-700 mb-2">Question (<Layouts.app flash={@flash}>
-  <div class="min-h-screen bg-slate-50 p-8">
-    <div class="max-w-4xl mx-auto">
-      <!-- Header with Pack Info -->
-      <div class="mb-8">
-        <%= if @current_pack_id do %>
-          <% pack = Enum.find(@packs, &(&1.id == String.to_integer(@current_pack_id))) %>
-          <div class="mb-4">
-            <.link navigate="/packs" class="text-blue-600 hover:text-blue-700 text-sm font-medium">
-              ← Back to Packs
-            </.link>
-          </div>
-          <h1 class="text-3xl font-light text-slate-800 mb-2">
-            Flashcards: {pack && pack.name || "Unknown Pack"}
-          </h1>
-          <p class="text-slate-600">Manage flashcards in this pack</p>
-        <% else %>
-          <h1 class="text-3xl font-light text-slate-800 mb-2">All Flashcards</h1>
-          <p class="text-slate-600">Manage your flashcards across all packs</p>
-          <div class="mt-4">
-            <.link navigate="/packs" class="text-blue-600 hover:text-blue-700 text-sm font-medium">
-              → Manage Packs
-            </.link>
-          </div>
-        <% end %>
-      </div>
-
-      <!-- Flashcard Form -->
-      <div class="bg-white rounded-lg shadow-sm border border-slate-200 p-6 mb-8">
-        <h2 class="text-lg font-medium text-slate-800 mb-4">
-          {if @editing_id, do: "Edit Flashcard", else: "Add New Flashcard"}
-        </h2>
-
-        <.form
-          for={@form}
-          id="flashcard-form"
-          phx-change="validate"
-          phx-submit="save"
-          class="space-y-4"
-        >
-          <!-- Pack Selection (only show if not filtering by pack) -->
-          <%= if !@current_pack_id do %>
-            <div>
-              <label class="block text-sm font-medium text-slate-700 mb-2">Pack</label>
-              <select 
-                name="flashcard[pack_id]" 
-                class="w-full px-4 py-3 rounded-lg bg-white border border-slate-300 text-slate-800 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
-              >
-                <option value="">Select a pack...</option>
-                <%= for pack <- @packs do %>
-                  <option value={pack.id} selected={@form[:pack_id].value == pack.id}>
-                    {pack.name}
-                  </option>
-                <% end %>
-              </select>
-            </div>
-          <% else %>
-            <!-- Hidden field for current pack -->
-            <input type="hidden" name="flashcard[pack_id]" value={@current_pack_id} />
-          <% end %>
-
-          <div>
             <label class="block text-sm font-medium text-slate-700 mb-2">Question (Front)</label>
             <.input
               field={@form[:front]}
@@ -250,4 +188,3 @@
     </div>
   </div>
 </Layouts.app>
-

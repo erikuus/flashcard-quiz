@@ -1,0 +1,127 @@
+<Layouts.app flash={@flash}>
+  <div class="min-h-screen bg-slate-50 p-8">
+    <div class="max-w-4xl mx-auto">
+      <!-- Header -->
+      <div class="mb-8">
+        <h1 class="text-3xl font-light text-slate-800 mb-2">Flashcard Packs</h1>
+        <p class="text-slate-600">Organize your flashcards into focused study packs</p>
+        <div class="mt-4">
+          <.link navigate="/manage" class="text-blue-600 hover:text-blue-700 text-sm font-medium">
+            ← Back to Flashcards
+          </.link>
+        </div>
+      </div>
+      
+<!-- Pack Form -->
+      <div class="bg-white rounded-lg shadow-sm border border-slate-200 p-6 mb-8">
+        <h2 class="text-lg font-medium text-slate-800 mb-4">
+          {if @editing_id, do: "Edit Pack", else: "Create New Pack"}
+        </h2>
+
+        <.form
+          for={@form}
+          id="pack-form"
+          phx-change="validate"
+          phx-submit="save"
+          class="space-y-4"
+        >
+          <div>
+            <.input
+              field={@form[:name]}
+              type="text"
+              placeholder="Pack name (e.g., Elixir Basics, Phoenix Specifics)"
+              class="w-full px-4 py-3 rounded-lg bg-white border border-slate-300 text-slate-800 placeholder:text-slate-500 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+              error_class="border-red-400 focus:border-red-500 focus:ring focus:ring-red-300"
+            />
+          </div>
+
+          <div>
+            <.input
+              field={@form[:description]}
+              type="textarea"
+              placeholder="Optional description"
+              rows="3"
+              class="w-full px-4 py-3 rounded-lg bg-white border border-slate-300 text-slate-800 placeholder:text-slate-500 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 resize-none"
+              error_class="border-red-400 focus:border-red-500 focus:ring focus:ring-red-300"
+            />
+          </div>
+
+          <div class="flex gap-3">
+            <button
+              type="submit"
+              class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
+            >
+              {if @editing_id, do: "Update Pack", else: "Create Pack"}
+            </button>
+
+            <%= if @editing_id do %>
+              <button
+                type="button"
+                phx-click="cancel"
+                class="px-6 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-medium rounded-lg transition-colors"
+              >
+                Cancel
+              </button>
+            <% end %>
+          </div>
+        </.form>
+      </div>
+      
+<!-- Packs List -->
+      <div class="bg-white rounded-lg shadow-sm border border-slate-200">
+        <div class="p-6 border-b border-slate-200">
+          <h2 class="text-lg font-medium text-slate-800">Your Packs</h2>
+        </div>
+
+        <%= if @packs_empty? do %>
+          <div class="p-8 text-center">
+            <div class="text-slate-400 mb-2">📚</div>
+            <p class="text-slate-600 mb-1">No packs yet</p>
+            <p class="text-sm text-slate-500">
+              Create your first pack to organize your flashcards
+            </p>
+          </div>
+        <% else %>
+          <div class="divide-y divide-slate-200">
+            <%= for pack <- @packs do %>
+              <div class="p-6 flex items-center justify-between hover:bg-slate-50 transition-colors">
+                <div class="flex-1">
+                  <h3 class="font-medium text-slate-800 mb-1">{pack.name}</h3>
+                  <%= if pack.description do %>
+                    <p class="text-sm text-slate-600">{pack.description}</p>
+                  <% end %>
+                </div>
+
+                <div class="flex items-center gap-3">
+                  <.link
+                    navigate={"/manage?pack_id=#{pack.id}"}
+                    class="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                  >
+                    View Cards
+                  </.link>
+
+                  <button
+                    phx-click="edit"
+                    phx-value-id={pack.id}
+                    class="text-sm text-slate-600 hover:text-slate-700 font-medium"
+                  >
+                    Edit
+                  </button>
+
+                  <button
+                    phx-click="delete"
+                    phx-value-id={pack.id}
+                    data-confirm="Are you sure? This will delete all flashcards in this pack."
+                    class="text-sm text-red-600 hover:text-red-700 font-medium"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</Layouts.app>

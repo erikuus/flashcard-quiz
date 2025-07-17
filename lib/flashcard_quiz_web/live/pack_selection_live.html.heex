@@ -1,0 +1,70 @@
+<Layouts.app flash={@flash}>
+  <div class="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6">
+    <div class="text-center max-w-lg">
+      <h1 class="text-4xl font-light text-slate-800 mb-4">Flashcard Quiz</h1>
+      <p class="text-lg text-slate-600 mb-8">Focus. Learn. Master.</p>
+      
+<!-- Pack Selection -->
+      <div class="bg-white rounded-2xl shadow-lg border border-slate-200 p-8">
+        <h2 class="text-2xl font-medium text-slate-800 mb-6">Select Pack to Study</h2>
+
+        <%= if @packs_empty? do %>
+          <div class="text-center py-8">
+            <p class="text-slate-600 mb-4">No packs available</p>
+            <p class="text-sm text-slate-500 mb-6">
+              Create your first pack to start studying
+            </p>
+            <a
+              href="/packs"
+              class="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+            >
+              Create Pack
+            </a>
+          </div>
+        <% else %>
+          <!-- All Packs Option -->
+          <button
+            phx-click="start_all_packs"
+            class="w-full mb-4 p-4 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg transition-colors border border-slate-300"
+          >
+            <div class="text-left">
+              <h3 class="font-medium">All Packs</h3>
+              <p class="text-sm text-slate-600">Study from all your flashcards</p>
+            </div>
+          </button>
+          
+<!-- Individual Packs -->
+          <div class="space-y-3">
+            <%= for pack <- @packs do %>
+              <button
+                phx-click="start_pack"
+                phx-value-id={pack.id}
+                class="w-full p-4 bg-white hover:bg-slate-50 text-slate-800 rounded-lg transition-colors border border-slate-200 hover:border-slate-300"
+              >
+                <div class="text-left">
+                  <h3 class="font-medium">{pack.name}</h3>
+                  <%= if pack.description do %>
+                    <p class="text-sm text-slate-600">{pack.description}</p>
+                  <% end %>
+                </div>
+              </button>
+            <% end %>
+          </div>
+        <% end %>
+
+        <div class="mt-8 pt-6 border-t border-slate-200">
+          <a
+            href="/manage"
+            class="text-slate-600 hover:text-slate-800 transition-colors underline"
+          >
+            Manage Cards
+          </a>
+          <span class="mx-3 text-slate-400">•</span>
+          <a href="/packs" class="text-slate-600 hover:text-slate-800 transition-colors underline">
+            Manage Packs
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</Layouts.app>

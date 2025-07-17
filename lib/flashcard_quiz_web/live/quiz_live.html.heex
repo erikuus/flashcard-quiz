@@ -128,7 +128,7 @@
               phx-click="previous_card"
               phx-hook="ClearDraft"
               disabled={@current_index == 0}
-              class={"flex-1 px-4 py-2 rounded-lg transition-colors " <> if(@current_index == 0, do: "border border-slate-200 text-slate-400 cursor-not-allowed", else: "bg-slate-700 text-white hover:bg-slate-800")}
+              class={"flex-1 px-4 py-2 rounded-lg transition-colors " <> if(@current_index == 0, do: "border border-slate-200 text-slate-400 cursor-not-allowed", else: "border border-slate-400 text-slate-600")}
             >
               Previous
             </button>
@@ -137,7 +137,7 @@
               phx-click="next_card"
               phx-hook="ClearDraft"
               disabled={@current_index >= length(@flashcards) - 1}
-              class={"flex-1 px-4 py-2 rounded-lg transition-colors " <> if(@current_index >= length(@flashcards) - 1, do: "border border-slate-200 text-slate-400 cursor-not-allowed", else: "bg-slate-700 text-white hover:bg-slate-800")}
+              class={"flex-1 px-4 py-2 rounded-lg transition-colors " <> if(@current_index >= length(@flashcards) - 1, do: "border border-slate-200 text-slate-400 cursor-not-allowed", else: "border border-slate-400 text-slate-600")}
             >
               Next Card
             </button>

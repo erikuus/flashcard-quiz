@@ -105,16 +105,4 @@ defmodule FlashcardQuizWeb.QuizLive do
       {:noreply, push_navigate(socket, to: "/quiz")}
     end
   end
-
-  defp current_flashcard(flashcards, index) do
-    Enum.at(flashcards, index)
-  end
-
-  defp has_previous?(index), do: index > 0
-  defp has_next?(flashcards, index), do: index < length(flashcards) - 1
-
-  # Unused helper function kept for compatibility
-  defp current_card(flashcards, index) do
-    Enum.at(flashcards, index)
-  end
 end

@@ -124,6 +124,7 @@
 <!-- Navigation -->
           <div class="flex gap-3">
             <button
+              id="previous-btn"
               phx-click="previous_card"
               phx-hook="ClearDraft"
               disabled={@current_index == 0}
@@ -132,6 +133,7 @@
               Previous
             </button>
             <button
+              id="next-btn"
               phx-click="next_card"
               phx-hook="ClearDraft"
               disabled={@current_index >= length(@flashcards) - 1}

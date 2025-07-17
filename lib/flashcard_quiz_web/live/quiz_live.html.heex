@@ -1,142 +1,162 @@
 <Layouts.app flash={@flash}>
   <div class="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6">
-    <!-- Header -->
-    <div class="text-center mb-12">
-      <h1 class="text-4xl font-light text-slate-800 mb-4">Flashcard Quiz</h1>
-      <p class="text-lg text-slate-600">Focus. Learn. Master.</p>
-    </div>
-
     <%= if @flashcards == [] do %>
-      <!-- Empty State -->
-      <div class="text-center">
-        <div class="text-slate-600 mb-6">No flashcards available yet.</div>
-        <a
-          href="/manage"
-          class="px-6 py-3 bg-slate-700 text-white rounded-lg hover:bg-slate-800 transition-colors font-medium"
-        >
-          Create Your First Card
-        </a>
+      <!-- No flashcards / Pack Selection Screen -->
+      <div class="text-center max-w-lg">
+        <h1 class="text-4xl font-light text-slate-800 mb-4">Flashcard Quiz</h1>
+        <p class="text-lg text-slate-600 mb-8">Focus. Learn. Master.</p>
+        
+<!-- Pack Selection -->
+        <div class="bg-white rounded-2xl shadow-lg border border-slate-200 p-8">
+          <h2 class="text-2xl font-medium text-slate-800 mb-6">Select Pack to Study</h2>
+
+          <form phx-submit="select_pack" class="space-y-4">
+            <select
+              name="pack_id"
+              class="w-full px-4 py-3 bg-slate-50 text-slate-800 border border-slate-200 rounded-lg focus:border-slate-400 focus:ring focus:ring-slate-200 focus:ring-opacity-50"
+            >
+              <option value="">All Packs</option>
+              <%= for pack <- @packs do %>
+                <option value={pack.id} selected={@selected_pack && @selected_pack.id == pack.id}>
+                  {pack.name}
+                </option>
+              <% end %>
+            </select>
+
+            <button
+              type="submit"
+              class="w-full px-6 py-3 bg-slate-700 text-white rounded-lg hover:bg-slate-800 transition-colors font-medium"
+            >
+              Start Quiz
+            </button>
+          </form>
+
+          <div class="mt-6 pt-6 border-t border-slate-200">
+            <a
+              href="/manage"
+              class="text-slate-600 hover:text-slate-800 transition-colors underline"
+            >
+              Manage Cards
+            </a>
+            <span class="mx-3 text-slate-400">•</span>
+            <a
+              href="/packs"
+              class="text-slate-600 hover:text-slate-800 transition-colors underline"
+            >
+              Manage Packs
+            </a>
+          </div>
+        </div>
       </div>
     <% else %>
-      <!-- Main Quiz Interface -->
-      <div class="w-full max-w-2xl">
-        <!-- Flashcard Display -->
-        <div class="bg-white rounded-2xl shadow-lg border border-slate-200 p-8 mb-8 min-h-[320px] flex items-center justify-center">
-          <div class="text-center w-full">
-            <%= if length(@flashcards) > 0 do %>
-              <% card = Enum.at(@flashcards, @current_index) %>
-              <%= if @show_answer do %>
-                <div class="prose prose-slate max-w-none text-slate-800 mb-6">
-                  <div phx-no-format>
-                    {raw(markdown_to_html(card.back))}
-                  </div>
-                </div>
-                <button
-                  phx-click="flip_card"
-                  class="px-6 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-800 transition-colors font-medium"
-                >
-                  Show Question
-                </button>
-              <% else %>
-                <div class="prose prose-slate max-w-none text-slate-800 mb-6">
-                  <div phx-no-format>
-                    {raw(markdown_to_html(card.front))}
-                  </div>
-                </div>
-                <button
-                  phx-click="flip_card"
-                  class="px-6 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-800 transition-colors font-medium"
-                >
-                  Show Answer
-                </button>
-              <% end %>
-            <% end %>
-          </div>
+      <!-- Quiz Interface -->
+      <div class="w-full max-w-4xl">
+        <!-- Header - Minimal in focus mode -->
+        <div class="text-center mb-8">
+          <h1 class="text-3xl font-light text-slate-800 mb-2">
+            {if @selected_pack, do: @selected_pack.name, else: "All Packs"}
+          </h1>
+          <p class="text-slate-600">
+            Card {@current_index + 1} of {length(@flashcards)} • Score: {@score_correct}/{@score_total}
+          </p>
         </div>
-        
-<!-- Progress Bar -->
-        <div class="mb-6">
-          <div class="flex justify-between text-sm text-slate-600 mb-2">
-            <span>
-              Card {if length(@flashcards) > 0, do: @current_index + 1, else: 0} of {length(
-                @flashcards
-              )}
-            </span>
-            <span>Score: {@score}/{@answered_count}</span>
-          </div>
-          <div class="w-full bg-slate-200 rounded-full h-2">
-            <div
-              class="bg-slate-700 h-2 rounded-full transition-all duration-300"
-              style={"width: #{if length(@flashcards) > 0, do: (@current_index + 1) / length(@flashcards) * 100, else: 0}%"}
-            >
+
+        <%= if @current_index < length(@flashcards) do %>
+          <% card = Enum.at(@flashcards, @current_index) %>
+          
+<!-- Question Card -->
+          <div class="bg-white rounded-2xl shadow-lg border border-slate-200 p-8 mb-6">
+            <div class="prose prose-slate max-w-none text-slate-800">
+              {raw(Earmark.as_html!(card.front))}
             </div>
           </div>
-        </div>
-        
-<!-- Action Buttons (only show when answer is visible) -->
-        <%= if @show_answer do %>
-          <div class="flex gap-3 mb-8">
+          
+<!-- Draft Answer Textarea -->
+          <div class="bg-slate-900 rounded-2xl border border-slate-700 p-6 mb-6">
+            <label class="block text-slate-300 text-sm font-medium mb-3">Your Answer</label>
+            <textarea
+              phx-change="update_draft"
+              name="draft"
+              placeholder="Write your answer here... (supports code)"
+              rows="8"
+              class="w-full bg-slate-800 text-slate-100 placeholder:text-slate-400 border border-slate-600 rounded-lg px-4 py-3 font-mono text-sm leading-relaxed focus:border-slate-400 focus:ring focus:ring-slate-400 focus:ring-opacity-25 resize-none"
+            ><%= @draft_answer %></textarea>
+          </div>
+          
+<!-- Show Answer Button / Answer Display -->
+          <%= if not @showing_answer do %>
+            <div class="text-center mb-6">
+              <button
+                phx-click="flip_card"
+                class="px-8 py-3 bg-slate-700 text-white rounded-lg hover:bg-slate-800 transition-colors font-medium"
+              >
+                Show Answer
+              </button>
+            </div>
+          <% else %>
+            <!-- Correct Answer -->
+            <div class="bg-white rounded-2xl shadow-lg border border-slate-200 p-8 mb-6">
+              <h3 class="text-lg font-medium text-slate-800 mb-4">Correct Answer</h3>
+              <div class="prose prose-slate max-w-none text-slate-800">
+                {raw(Earmark.as_html!(card.back))}
+              </div>
+            </div>
+            
+<!-- Score Buttons -->
+            <div class="flex gap-4 justify-center mb-6">
+              <button
+                phx-click="mark_correct"
+                class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+              >
+                ✓ Correct
+              </button>
+              <button
+                phx-click="mark_incorrect"
+                class="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+              >
+                ✗ Incorrect
+              </button>
+            </div>
+          <% end %>
+          
+<!-- Navigation -->
+          <div class="flex gap-3">
             <button
-              phx-click="mark_incorrect"
-              class="flex-1 px-4 py-3 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors font-medium"
+              phx-click="previous_card"
+              disabled={@current_index == 0}
+              class={"flex-1 px-4 py-2 rounded-lg transition-colors " <> if(@current_index == 0, do: "border border-slate-200 text-slate-400 cursor-not-allowed", else: "bg-slate-700 text-white hover:bg-slate-800")}
             >
-              Incorrect
+              Previous
             </button>
             <button
-              phx-click="mark_correct"
-              class="flex-1 px-4 py-3 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors font-medium"
+              phx-click="next_card"
+              disabled={@current_index >= length(@flashcards) - 1}
+              class={"flex-1 px-4 py-2 rounded-lg transition-colors " <> if(@current_index >= length(@flashcards) - 1, do: "border border-slate-200 text-slate-400 cursor-not-allowed", else: "bg-slate-700 text-white hover:bg-slate-800")}
             >
-              Correct
+              Next Card
             </button>
           </div>
         <% end %>
         
-<!-- Navigation -->
-        <div class="flex gap-3">
+<!-- Bottom Actions -->
+        <div class="mt-12 text-center space-x-6">
           <button
-            phx-click="previous_card"
-            disabled={@current_index == 0}
-            class={[
-              "flex-1 px-4 py-2 rounded-lg transition-colors",
-              if(@current_index == 0,
-                do: "border border-slate-200 text-slate-400 cursor-not-allowed",
-                else: "border border-slate-300 text-slate-700 hover:bg-slate-50"
-              )
-            ]}
+            phx-click="reset_quiz"
+            class="text-slate-600 hover:text-slate-800 transition-colors underline"
           >
-            Previous
+            Reset Quiz
           </button>
-          <button
-            phx-click="next_card"
-            disabled={@current_index >= length(@flashcards) - 1}
-            class={[
-              "flex-1 px-4 py-2 rounded-lg transition-colors",
-              if(@current_index >= length(@flashcards) - 1,
-                do: "bg-slate-400 text-white cursor-not-allowed",
-                else: "bg-slate-700 text-white hover:bg-slate-800"
-              )
-            ]}
+          <a href="/" class="text-slate-600 hover:text-slate-800 transition-colors underline">
+            Change Pack
+          </a>
+          <a
+            href="/manage"
+            class="text-slate-600 hover:text-slate-800 transition-colors underline"
           >
-            Next Card
-          </button>
+            Manage Cards
+          </a>
         </div>
       </div>
     <% end %>
-    
-<!-- Bottom Actions -->
-    <div class="mt-12 flex gap-4">
-      <a
-        href="/manage"
-        class="px-6 py-2 text-slate-600 hover:text-slate-800 transition-colors underline"
-      >
-        Manage Cards
-      </a>
-      <button
-        phx-click="reset_quiz"
-        class="px-6 py-2 text-slate-600 hover:text-slate-800 transition-colors underline"
-      >
-        Reset Quiz
-      </button>
-    </div>
   </div>
 </Layouts.app>

@@ -7,129 +7,114 @@ defmodule FlashcardQuizWeb.QuizLive do
   def mount(params, _session, socket) do
     pack_id = params["pack_id"]
 
+    packs = Flashcards.list_packs()
+
     flashcards =
       if pack_id do
-        Flashcards.list_flashcards(pack_id: String.to_integer(pack_id))
+        Flashcards.list_flashcards(pack_id: pack_id)
       else
         Flashcards.list_flashcards()
       end
 
-    if flashcards == [] do
-      {:ok,
-       socket
-       |> put_flash(:info, "No flashcards available. Create some flashcards first!")
-       |> push_navigate(to: "/manage")}
-    else
-      {:ok,
-       socket
-       |> assign(:pack_id, pack_id)
-       |> assign(:flashcards, flashcards)
-       |> assign(:current_index, 0)
-       |> assign(:show_answer, false)
-       |> assign(:score, 0)
-       |> assign(:answered_count, 0)
-       |> assign(:current_card, hd(flashcards))}
-    end
+    selected_pack =
+      if pack_id do
+        Enum.find(packs, &(&1.id == String.to_integer(pack_id)))
+      else
+        nil
+      end
+
+    {:ok,
+     socket
+     |> assign(:flashcards, flashcards)
+     |> assign(:packs, packs)
+     |> assign(:selected_pack, selected_pack)
+     |> assign(:current_index, 0)
+     |> assign(:showing_answer, false)
+     |> assign(:draft_answer, "")
+     |> assign(:score_correct, 0)
+     |> assign(:score_total, 0)}
   end
 
   @impl true
   def handle_event("flip_card", _params, socket) do
-    {:noreply, assign(socket, :show_answer, !socket.assigns.show_answer)}
+    {:noreply, assign(socket, :showing_answer, true)}
   end
 
-  @impl true
-  def handle_event("mark_correct", _params, socket) do
-    new_score = socket.assigns.score + 1
-    new_answered_count = socket.assigns.answered_count + 1
-
-    socket =
-      socket
-      |> assign(:score, new_score)
-      |> assign(:answered_count, new_answered_count)
-      |> next_card()
-
-    {:noreply, socket}
+  def handle_event("hide_answer", _params, socket) do
+    {:noreply, assign(socket, :showing_answer, false)}
   end
 
-  @impl true
-  def handle_event("mark_incorrect", _params, socket) do
-    new_answered_count = socket.assigns.answered_count + 1
-
-    socket =
-      socket
-      |> assign(:answered_count, new_answered_count)
-      |> next_card()
-
-    {:noreply, socket}
-  end
-
-  @impl true
   def handle_event("next_card", _params, socket) do
-    {:noreply, next_card(socket)}
+    new_index = min(socket.assigns.current_index + 1, length(socket.assigns.flashcards) - 1)
+
+    {:noreply,
+     socket
+     |> assign(:current_index, new_index)
+     |> assign(:showing_answer, false)
+     |> assign(:draft_answer, "")}
   end
 
-  @impl true
   def handle_event("previous_card", _params, socket) do
-    {:noreply, previous_card(socket)}
+    new_index = max(socket.assigns.current_index - 1, 0)
+
+    {:noreply,
+     socket
+     |> assign(:current_index, new_index)
+     |> assign(:showing_answer, false)
+     |> assign(:draft_answer, "")}
   end
 
-  @impl true
+  def handle_event("mark_correct", _params, socket) do
+    {:noreply,
+     socket
+     |> assign(:score_correct, socket.assigns.score_correct + 1)
+     |> assign(:score_total, socket.assigns.score_total + 1)}
+  end
+
+  def handle_event("mark_incorrect", _params, socket) do
+    {:noreply, assign(socket, :score_total, socket.assigns.score_total + 1)}
+  end
+
   def handle_event("reset_quiz", _params, socket) do
     {:noreply,
      socket
      |> assign(:current_index, 0)
-     |> assign(:show_answer, false)
-     |> assign(:score, 0)
-     |> assign(:answered_count, 0)
-     |> assign(:current_card, hd(socket.assigns.flashcards))}
+     |> assign(:showing_answer, false)
+     |> assign(:draft_answer, "")
+     |> assign(:score_correct, 0)
+     |> assign(:score_total, 0)}
   end
 
-  defp next_card(socket) do
-    flashcards = socket.assigns.flashcards
-    current_index = socket.assigns.current_index
-    new_index = min(current_index + 1, length(flashcards) - 1)
-
-    socket
-    |> assign(:current_index, new_index)
-    |> assign(:show_answer, false)
-    |> assign(:current_card, Enum.at(flashcards, new_index))
+  def handle_event("update_draft", %{"draft" => draft}, socket) do
+    {:noreply, assign(socket, :draft_answer, draft)}
   end
 
-  defp previous_card(socket) do
-    flashcards = socket.assigns.flashcards
-    current_index = socket.assigns.current_index
-    new_index = max(current_index - 1, 0)
-
-    socket
-    |> assign(:current_index, new_index)
-    |> assign(:show_answer, false)
-    |> assign(:current_card, Enum.at(flashcards, new_index))
-  end
-
-  defp progress_percentage(current_index, total_cards) do
-    if total_cards > 0 do
-      round((current_index + 1) / total_cards * 100)
+  def handle_event("select_pack", %{"pack_id" => pack_id}, socket) do
+    if pack_id == "" do
+      # All packs
+      {:noreply, push_navigate(socket, to: "/")}
     else
-      0
+      {:noreply, push_navigate(socket, to: "/quiz?pack_id=#{pack_id}")}
     end
   end
 
-  defp markdown_to_html(text) do
-    text
-    |> String.replace(
-      ~r/```elixir\n(.*?)\n```/s,
-      "<pre class=\"bg-slate-100 p-4 rounded-lg text-sm font-mono overflow-x-auto\"><code class=\"language-elixir\">\\1</code></pre>"
-    )
-    |> String.replace(
-      ~r/```(\w+)?\n(.*?)\n```/s,
-      "<pre class=\"bg-slate-100 p-4 rounded-lg text-sm font-mono overflow-x-auto\"><code>\\2</code></pre>"
-    )
-    |> String.replace(
-      ~r/`([^`]+)`/,
-      "<code class=\"bg-slate-100 px-2 py-1 rounded text-sm font-mono\">\\1</code>"
-    )
-    |> String.replace(~r/\*\*(.*?)\*\*/, "<strong>\\1</strong>")
-    |> String.replace(~r/\*(.*?)\*/, "<em>\\1</em>")
-    |> String.replace("\n", "<br>")
+  def handle_event("start_quiz", _params, socket) do
+    if socket.assigns.selected_pack do
+      {:noreply, push_navigate(socket, to: "/quiz?pack_id=#{socket.assigns.selected_pack.id}")}
+    else
+      {:noreply, push_navigate(socket, to: "/quiz")}
+    end
+  end
+
+  defp current_flashcard(flashcards, index) do
+    Enum.at(flashcards, index)
+  end
+
+  defp has_previous?(index), do: index > 0
+  defp has_next?(flashcards, index), do: index < length(flashcards) - 1
+
+  # Unused helper function kept for compatibility
+  defp current_card(flashcards, index) do
+    Enum.at(flashcards, index)
   end
 end

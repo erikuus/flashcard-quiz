@@ -17,7 +17,7 @@ defmodule FlashcardQuizWeb.Router do
   scope "/", FlashcardQuizWeb do
     pipe_through :browser
 
-    live "/", QuizLive
+    live "/", PacksLive
     live "/quiz", QuizLive
     live "/packs", PacksLive
     live "/manage", ManageLive

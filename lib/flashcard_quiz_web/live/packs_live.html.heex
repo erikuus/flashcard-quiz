@@ -98,6 +98,12 @@
                     class="text-sm text-blue-600 hover:text-blue-700 font-medium"
                   >
                     View Cards
+                    <.link
+                      navigate={~p"/quiz?pack_id=#{pack.id}"}
+                      class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors"
+                    >
+                      Start Quiz
+                    </.link>
                   </.link>
 
                   <button

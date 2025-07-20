@@ -32,17 +32,11 @@
           </form>
 
           <div class="mt-6 pt-6 border-t border-slate-200">
-            <a
-              href="/manage"
-              class="text-slate-600 hover:text-slate-800 transition-colors underline"
-            >
+            <a href="/manage" class="text-slate-600 hover:text-slate-800 transition-colors underline">
               Manage Cards
             </a>
             <span class="mx-3 text-slate-400">•</span>
-            <a
-              href="/packs"
-              class="text-slate-600 hover:text-slate-800 transition-colors underline"
-            >
+            <a href="/packs" class="text-slate-600 hover:text-slate-800 transition-colors underline">
               Manage Packs
             </a>
           </div>
@@ -67,7 +61,7 @@
 <!-- Question Card -->
           <div class="bg-white rounded-2xl shadow-lg border border-slate-200 p-8 mb-6">
             <div class="prose prose-slate max-w-none text-slate-800">
-              {raw(Earmark.as_html!(card.front))}
+              {FlashcardQuizWeb.process_markdown(card.front)}
             </div>
           </div>
           
@@ -100,7 +94,7 @@
             <div class="bg-white rounded-2xl shadow-lg border border-slate-200 p-8 mb-6">
               <h3 class="text-lg font-medium text-slate-800 mb-4">Correct Answer</h3>
               <div class="prose prose-slate max-w-none text-slate-800">
-                {raw(Earmark.as_html!(card.back))}
+                {FlashcardQuizWeb.process_markdown(card.back)}
               </div>
             </div>
             
@@ -146,19 +140,13 @@
         
 <!-- Bottom Actions -->
         <div class="mt-12 text-center space-x-6">
-          <button
-            phx-click="reset_quiz"
-            class="text-slate-600 hover:text-slate-800 transition-colors underline"
-          >
+          <button phx-click="reset_quiz" class="text-slate-600 hover:text-slate-800 transition-colors underline">
             Reset Quiz
           </button>
           <a href="/" class="text-slate-600 hover:text-slate-800 transition-colors underline">
             Change Pack
           </a>
-          <a
-            href="/manage"
-            class="text-slate-600 hover:text-slate-800 transition-colors underline"
-          >
+          <a href="/manage" class="text-slate-600 hover:text-slate-800 transition-colors underline">
             Manage Cards
           </a>
         </div>

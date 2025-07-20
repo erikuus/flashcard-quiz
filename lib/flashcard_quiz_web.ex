@@ -106,4 +106,30 @@ defmodule FlashcardQuizWeb do
   defmacro __using__(which) when is_atom(which) do
     apply(__MODULE__, which, [])
   end
+
+  @doc """
+  Processes markdown content with Earmark and enhances Elixir code blocks with Makeup syntax highlighting.
+  """
+  def process_markdown(content) do
+    content
+    |> Earmark.as_html!()
+    |> enhance_elixir_code_blocks()
+    |> Phoenix.HTML.raw()
+  end
+
+  defp enhance_elixir_code_blocks(html) do
+    # Pattern to match <code class="elixir">...</code> blocks
+    pattern = ~r/<code class="elixir">(.*?)<\/code>/s
+
+    Regex.replace(pattern, html, fn _, code_content ->
+      # Decode HTML entities before highlighting
+      code_content
+      |> String.replace("&lt;", "<")
+      |> String.replace("&gt;", ">")
+      |> String.replace("&amp;", "&")
+      |> String.replace("&quot;", "\"")
+      |> String.replace("&#39;", "'")
+      |> Makeup.highlight(lexer: Makeup.Lexers.ElixirLexer)
+    end)
+  end
 end

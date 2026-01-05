@@ -29,6 +29,7 @@ defmodule FlashcardQuizWeb.ManageLive do
      |> assign(:packs, packs)
      |> assign(:form, to_form(changeset))
      |> assign(:editing_id, nil)
+     |> assign(:show_modal, false)
      |> assign(:current_pack_id, pack_id)
      |> assign(:flashcards_empty?, flashcards == [])}
   end
@@ -64,6 +65,24 @@ defmodule FlashcardQuizWeb.ManageLive do
     end
   end
 
+  def handle_event("new_flashcard", _params, socket) do
+    changeset = Flashcards.change_flashcard(%Flashcard{})
+
+    changeset =
+      if socket.assigns.current_pack_id do
+        changeset
+        |> Ecto.Changeset.put_change(:pack_id, String.to_integer(socket.assigns.current_pack_id))
+      else
+        changeset
+      end
+
+    {:noreply,
+     socket
+     |> assign(:form, to_form(changeset))
+     |> assign(:editing_id, nil)
+     |> assign(:show_modal, true)}
+  end
+
   def handle_event("edit", %{"id" => id}, socket) do
     flashcard = Flashcards.get_flashcard!(id)
     changeset = Flashcards.change_flashcard(flashcard)
@@ -71,7 +90,8 @@ defmodule FlashcardQuizWeb.ManageLive do
     {:noreply,
      socket
      |> assign(:form, to_form(changeset))
-     |> assign(:editing_id, String.to_integer(id))}
+     |> assign(:editing_id, String.to_integer(id))
+     |> assign(:show_modal, true)}
   end
 
   def handle_event("cancel", _params, socket) do
@@ -89,7 +109,8 @@ defmodule FlashcardQuizWeb.ManageLive do
     {:noreply,
      socket
      |> assign(:form, to_form(changeset))
-     |> assign(:editing_id, nil)}
+     |> assign(:editing_id, nil)
+     |> assign(:show_modal, false)}
   end
 
   def handle_event("delete", %{"id" => id}, socket) do
@@ -108,6 +129,24 @@ defmodule FlashcardQuizWeb.ManageLive do
      |> assign(:flashcards, flashcards)
      |> assign(:flashcards_empty?, flashcards == [])
      |> put_flash(:info, "Flashcard deleted successfully")}
+  end
+
+  def handle_event("close_modal", _params, socket) do
+    changeset = Flashcards.change_flashcard(%Flashcard{})
+
+    changeset =
+      if socket.assigns.current_pack_id do
+        changeset
+        |> Ecto.Changeset.put_change(:pack_id, String.to_integer(socket.assigns.current_pack_id))
+      else
+        changeset
+      end
+
+    {:noreply,
+     socket
+     |> assign(:form, to_form(changeset))
+     |> assign(:editing_id, nil)
+     |> assign(:show_modal, false)}
   end
 
   defp create_flashcard(socket, flashcard_params) do
@@ -139,6 +178,7 @@ defmodule FlashcardQuizWeb.ManageLive do
          |> assign(:form, to_form(changeset))
          |> assign(:flashcards, flashcards)
          |> assign(:flashcards_empty?, false)
+         |> assign(:show_modal, false)
          |> put_flash(:info, "Flashcard created successfully")}
 
       {:error, %Ecto.Changeset{} = changeset} ->
@@ -177,6 +217,7 @@ defmodule FlashcardQuizWeb.ManageLive do
          |> assign(:form, to_form(changeset))
          |> assign(:flashcards, flashcards)
          |> assign(:editing_id, nil)
+         |> assign(:show_modal, false)
          |> put_flash(:info, "Flashcard updated successfully")}
 
       {:error, %Ecto.Changeset{} = changeset} ->

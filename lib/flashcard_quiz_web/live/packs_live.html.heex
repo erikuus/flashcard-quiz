@@ -3,76 +3,29 @@
     <div class="max-w-4xl mx-auto">
       <!-- Header -->
       <div class="mb-8">
-        <h1 class="text-3xl font-light text-slate-800 mb-2">Flashcard Packs</h1>
-        <p class="text-slate-600">Organize your flashcards into focused study packs</p>
-        <div class="mt-4">
-          <.link navigate="/manage" class="text-blue-600 hover:text-blue-700 text-sm font-medium">
-            ← Back to Flashcards
+        <h1 class="text-3xl font-light text-slate-800 mb-2">Manage Packs</h1>
+        <nav class="mt-4 text-sm text-slate-500">
+          <.link navigate="/" class="text-blue-600 hover:text-blue-700 font-medium">
+            Home
           </.link>
-        </div>
+          <span class="mx-2">/</span>
+          <span class="text-slate-700">Manage Packs</span>
+        </nav>
       </div>
-      
-<!-- Pack Form -->
-      <div class="bg-white rounded-lg shadow-sm border border-slate-200 p-6 mb-8">
-        <h2 class="text-lg font-medium text-slate-800 mb-4">
-          {if @editing_id, do: "Edit Pack", else: "Create New Pack"}
-        </h2>
 
-        <.form
-          for={@form}
-          id="pack-form"
-          phx-change="validate"
-          phx-submit="save"
-          class="space-y-4"
+<!-- Packs Toolbar -->
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-lg font-medium text-slate-800">Packs</h2>
+        <button
+          phx-click="new_pack"
+          class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors"
         >
-          <div>
-            <.input
-              field={@form[:name]}
-              type="text"
-              placeholder="Pack name (e.g., Elixir Basics, Phoenix Specifics)"
-              class="w-full px-4 py-3 rounded-lg bg-white border border-slate-300 text-slate-800 placeholder:text-slate-500 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
-              error_class="border-red-400 focus:border-red-500 focus:ring focus:ring-red-300"
-            />
-          </div>
-
-          <div>
-            <.input
-              field={@form[:description]}
-              type="textarea"
-              placeholder="Optional description"
-              rows="3"
-              class="w-full px-4 py-3 rounded-lg bg-white border border-slate-300 text-slate-800 placeholder:text-slate-500 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 resize-none"
-              error_class="border-red-400 focus:border-red-500 focus:ring focus:ring-red-300"
-            />
-          </div>
-
-          <div class="flex gap-3">
-            <button
-              type="submit"
-              class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
-            >
-              {if @editing_id, do: "Update Pack", else: "Create Pack"}
-            </button>
-
-            <%= if @editing_id do %>
-              <button
-                type="button"
-                phx-click="cancel"
-                class="px-6 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-medium rounded-lg transition-colors"
-              >
-                Cancel
-              </button>
-            <% end %>
-          </div>
-        </.form>
+          Add New Pack
+        </button>
       </div>
-      
+
 <!-- Packs List -->
       <div class="bg-white rounded-lg shadow-sm border border-slate-200">
-        <div class="p-6 border-b border-slate-200">
-          <h2 class="text-lg font-medium text-slate-800">Your Packs</h2>
-        </div>
-
         <%= if @packs_empty? do %>
           <div class="p-8 text-center">
             <div class="text-slate-400 mb-2">📚</div>
@@ -97,19 +50,13 @@
                     navigate={"/manage?pack_id=#{pack.id}"}
                     class="text-sm text-blue-600 hover:text-blue-700 font-medium"
                   >
-                    View Cards
-                    <.link
-                      navigate={~p"/quiz?pack_id=#{pack.id}"}
-                      class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors"
-                    >
-                      Start Quiz
-                    </.link>
+                    Manage Flashcards
                   </.link>
 
                   <button
                     phx-click="edit"
                     phx-value-id={pack.id}
-                    class="text-sm text-slate-600 hover:text-slate-700 font-medium"
+                    class="px-3 py-1.5 text-sm bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-md transition-colors"
                   >
                     Edit
                   </button>
@@ -118,7 +65,7 @@
                     phx-click="delete"
                     phx-value-id={pack.id}
                     data-confirm="Are you sure? This will delete all flashcards in this pack."
-                    class="text-sm text-red-600 hover:text-red-700 font-medium"
+                    class="px-3 py-1.5 text-sm bg-red-50 hover:bg-red-100 text-red-700 font-medium rounded-md transition-colors"
                   >
                     Delete
                   </button>
@@ -128,6 +75,79 @@
           </div>
         <% end %>
       </div>
+
+      <%= if @show_modal do %>
+        <div class="fixed inset-0 z-50 flex items-center justify-center">
+          <div
+            class="absolute inset-0 bg-slate-900/40"
+            phx-click="close_modal"
+            aria-hidden="true"
+          >
+          </div>
+
+          <div class="relative z-10 w-full max-w-lg mx-4 bg-white rounded-lg shadow-lg border border-slate-200 p-6">
+            <div class="flex items-start justify-between mb-4">
+              <h2 class="text-lg font-medium text-slate-800">
+                {if @editing_id, do: "Edit Pack", else: "Add New Pack"}
+              </h2>
+              <button
+                type="button"
+                phx-click="close_modal"
+                class="text-slate-400 hover:text-slate-600"
+                aria-label="Close"
+              >
+                ✕
+              </button>
+            </div>
+
+            <.form
+              for={@form}
+              id="pack-form"
+              phx-change="validate"
+              phx-submit="save"
+              class="space-y-4"
+            >
+              <div>
+                <.input
+                  field={@form[:name]}
+                  type="text"
+                  placeholder="Pack name (e.g., Elixir Basics, Phoenix Specifics)"
+                  class="w-full px-4 py-3 rounded-lg bg-white border border-slate-300 text-slate-800 placeholder:text-slate-500 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+                  error_class="border-red-400 focus:border-red-500 focus:ring focus:ring-red-300"
+                />
+              </div>
+
+              <div>
+                <.input
+                  field={@form[:description]}
+                  type="textarea"
+                  placeholder="Optional description"
+                  rows="3"
+                  class="w-full px-4 py-3 rounded-lg bg-white border border-slate-300 text-slate-800 placeholder:text-slate-500 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 resize-none"
+                  error_class="border-red-400 focus:border-red-500 focus:ring focus:ring-red-300"
+                />
+              </div>
+
+              <div class="flex gap-3">
+                <button
+                  type="submit"
+                  class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
+                >
+                  {if @editing_id, do: "Update Pack", else: "Create Pack"}
+                </button>
+
+                <button
+                  type="button"
+                  phx-click="close_modal"
+                  class="px-6 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-medium rounded-lg transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </.form>
+          </div>
+        </div>
+      <% end %>
     </div>
   </div>
 </Layouts.app>

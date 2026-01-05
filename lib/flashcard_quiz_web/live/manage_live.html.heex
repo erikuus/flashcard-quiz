@@ -4,123 +4,46 @@
       <!-- Header -->
       <div class="mb-8">
         <h1 class="text-3xl font-light text-slate-800 mb-2">Manage Flashcards</h1>
-        <p class="text-slate-600">Create and organize your study materials</p>
-        <div class="flex gap-4 mt-4">
-          <.link navigate="/packs" class="text-blue-600 hover:text-blue-700 text-sm font-medium">
+        <nav class="mt-4 text-sm text-slate-500">
+          <.link navigate="/" class="text-blue-600 hover:text-blue-700 font-medium">
+            Home
+          </.link>
+          <span class="mx-2">/</span>
+          <.link navigate="/packs" class="text-blue-600 hover:text-blue-700 font-medium">
             Manage Packs
           </.link>
-          <.link navigate="/quiz" class="text-green-600 hover:text-green-700 text-sm font-medium">
-            Start Quiz
-          </.link>
-        </div>
-      </div>
-      
-<!-- Pack Filter Info -->
-      <%= if @current_pack_id do %>
-        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-2">
-              <span class="text-blue-800 font-medium">Viewing pack:</span>
-              <span class="text-blue-700">
-                {Enum.find(@packs, &(&1.id == String.to_integer(@current_pack_id)))
-                |> case do
-                  nil -> nil
-                  pack -> pack.name
-                end || "Unknown Pack"}
-              </span>
-            </div>
-            <.link
-              navigate="/manage"
-              class="text-blue-600 hover:text-blue-700 text-sm font-medium"
-            >
-              View All Cards
-            </.link>
-          </div>
-        </div>
-      <% end %>
-      
-<!-- Flashcard Form -->
-      <div class="bg-white rounded-lg shadow-sm border border-slate-200 p-6 mb-8">
-        <h2 class="text-lg font-medium text-slate-800 mb-4">
-          {if @editing_id, do: "Edit Flashcard", else: "Create New Flashcard"}
-        </h2>
-
-        <.form
-          for={@form}
-          id="flashcard-form"
-          phx-change="validate"
-          phx-submit="save"
-          class="space-y-4"
-        >
-          <!-- Pack Selection -->
-          <div>
-            <label class="block text-sm font-medium text-slate-700 mb-2">Pack</label>
-            <.input
-              field={@form[:pack_id]}
-              type="select"
-              options={[{"Select a pack", ""} | Enum.map(@packs, &{&1.name, &1.id})]}
-              class="w-full px-4 py-3 rounded-lg bg-white border border-slate-300 text-slate-800 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
-              error_class="border-red-400 focus:border-red-500 focus:ring focus:ring-red-300"
-            />
-          </div>
-
-          <div>
-            <label class="block text-sm font-medium text-slate-700 mb-2">Question (Front)</label>
-            <.input
-              field={@form[:front]}
-              type="textarea"
-              placeholder="Enter your question..."
-              rows="3"
-              class="w-full px-4 py-3 rounded-lg bg-white border border-slate-300 text-slate-800 placeholder:text-slate-500 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 resize-none"
-              error_class="border-red-400 focus:border-red-500 focus:ring focus:ring-red-300"
-            />
-          </div>
-
-          <div>
-            <label class="block text-sm font-medium text-slate-700 mb-2">Answer (Back)</label>
-            <.input
-              field={@form[:back]}
-              type="textarea"
-              placeholder="Enter your answer (supports markdown and code blocks)..."
-              rows="8"
-              class="w-full px-4 py-3 rounded-lg bg-white border border-slate-300 text-slate-800 placeholder:text-slate-500 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 resize-none font-mono text-sm"
-              error_class="border-red-400 focus:border-red-500 focus:ring focus:ring-red-300"
-            />
-          </div>
-
-          <div class="flex gap-3">
-            <button
-              type="submit"
-              class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
-            >
-              {if @editing_id, do: "Update Flashcard", else: "Add Flashcard"}
-            </button>
-
-            <%= if @editing_id do %>
-              <button
-                type="button"
-                phx-click="cancel"
-                class="px-6 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-medium rounded-lg transition-colors"
-              >
-                Cancel
-              </button>
-            <% end %>
-          </div>
-        </.form>
-      </div>
-      
-<!-- Flashcards List -->
-      <div class="bg-white rounded-lg shadow-sm border border-slate-200">
-        <div class="p-6 border-b border-slate-200">
-          <h2 class="text-lg font-medium text-slate-800">
+          <span class="mx-2">/</span>
+          <span class="text-slate-700">
             <%= if @current_pack_id do %>
-              Flashcards in This Pack
+              {Enum.find(@packs, &(&1.id == String.to_integer(@current_pack_id)))
+              |> case do
+                nil -> "Selected Pack"
+                pack -> "Pack: #{pack.name}"
+              end}
             <% else %>
               All Flashcards
             <% end %>
-          </h2>
-        </div>
+          </span>
+        </nav>
+      </div>
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-lg font-medium text-slate-800">
+          <%= if @current_pack_id do %>
+            Flashcards
+          <% else %>
+            All Flashcards
+          <% end %>
+        </h2>
+        <button
+          phx-click="new_flashcard"
+          class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors"
+        >
+          Add New Flashcard
+        </button>
+      </div>
 
+<!-- Flashcards List -->
+      <div class="bg-white rounded-lg shadow-sm border border-slate-200">
         <%= if @flashcards_empty? do %>
           <div class="p-8 text-center">
             <div class="text-slate-400 mb-2">📚</div>
@@ -151,7 +74,7 @@
                     <button
                       phx-click="edit"
                       phx-value-id={flashcard.id}
-                      class="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                      class="px-3 py-1.5 text-sm bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-md transition-colors"
                     >
                       Edit
                     </button>
@@ -160,7 +83,7 @@
                       phx-click="delete"
                       phx-value-id={flashcard.id}
                       data-confirm="Are you sure?"
-                      class="text-sm text-red-600 hover:text-red-700 font-medium"
+                      class="px-3 py-1.5 text-sm bg-red-50 hover:bg-red-100 text-red-700 font-medium rounded-md transition-colors"
                     >
                       Delete
                     </button>
@@ -171,25 +94,91 @@
           </div>
         <% end %>
       </div>
-      
-<!-- Quiz Actions -->
-      <%= if !@flashcards_empty? do %>
-        <div class="mt-8 flex gap-4">
-          <%= if @current_pack_id do %>
-            <.link
-              navigate={"/quiz?pack_id=#{@current_pack_id}"}
-              class="px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors"
+
+      <%= if @show_modal do %>
+        <div class="fixed inset-0 z-50 flex items-center justify-center">
+          <div
+            class="absolute inset-0 bg-slate-900/40"
+            phx-click="close_modal"
+            aria-hidden="true"
+          >
+          </div>
+
+          <div class="relative z-10 w-full max-w-2xl mx-4 bg-white rounded-lg shadow-lg border border-slate-200 p-6">
+            <div class="flex items-start justify-between mb-4">
+              <h2 class="text-lg font-medium text-slate-800">
+                {if @editing_id, do: "Edit Flashcard", else: "Add New Flashcard"}
+              </h2>
+              <button
+                type="button"
+                phx-click="close_modal"
+                class="text-slate-400 hover:text-slate-600"
+                aria-label="Close"
+              >
+                ✕
+              </button>
+            </div>
+
+            <.form
+              for={@form}
+              id="flashcard-form"
+              phx-change="validate"
+              phx-submit="save"
+              class="space-y-4"
             >
-              Start Quiz for This Pack
-            </.link>
-          <% else %>
-            <.link
-              navigate="/quiz"
-              class="px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors"
-            >
-              Start Quiz (All Cards)
-            </.link>
-          <% end %>
+              <div>
+                <label class="block text-sm font-medium text-slate-700 mb-2">Pack</label>
+                <.input
+                  field={@form[:pack_id]}
+                  type="select"
+                  options={[{"Select a pack", ""} | Enum.map(@packs, &{&1.name, &1.id})]}
+                  class="w-full px-4 py-3 rounded-lg bg-white border border-slate-300 text-slate-800 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+                  error_class="border-red-400 focus:border-red-500 focus:ring focus:ring-red-300"
+                />
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-slate-700 mb-2">Question (Front)</label>
+                <.input
+                  field={@form[:front]}
+                  type="textarea"
+                  placeholder="Enter your question..."
+                  rows="3"
+                  class="w-full px-4 py-3 rounded-lg bg-white border border-slate-300 text-slate-800 placeholder:text-slate-500 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 resize-none"
+                  error_class="border-red-400 focus:border-red-500 focus:ring focus:ring-red-300"
+                />
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-slate-700 mb-2">Answer (Back)</label>
+                <.input
+                  field={@form[:back]}
+                  type="textarea"
+                  placeholder="Enter your answer (supports markdown and code blocks)..."
+                  rows="8"
+                  class="w-full px-4 py-3 rounded-lg bg-white border border-slate-300 text-slate-800 placeholder:text-slate-500 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 resize-none font-mono text-sm"
+                  error_class="border-red-400 focus:border-red-500 focus:ring focus:ring-red-300"
+                />
+              </div>
+
+              <div class="flex gap-3">
+                <button
+                  type="submit"
+                  class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
+                >
+                  {if @editing_id, do: "Update Flashcard", else: "Add Flashcard"}
+                </button>
+
+                <button
+                  type="button"
+                  phx-click="close_modal"
+                  class="px-6 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-medium rounded-lg transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </.form>
+          </div>
         </div>
       <% end %>
     </div>

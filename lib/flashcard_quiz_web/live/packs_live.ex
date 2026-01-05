@@ -13,6 +13,7 @@ defmodule FlashcardQuizWeb.PacksLive do
      |> assign(:packs, packs)
      |> assign(:form, to_form(changeset))
      |> assign(:editing_id, nil)
+     |> assign(:show_modal, false)
      |> assign(:packs_empty?, packs == [])}
   end
 
@@ -32,6 +33,16 @@ defmodule FlashcardQuizWeb.PacksLive do
     end
   end
 
+  def handle_event("new_pack", _params, socket) do
+    changeset = Flashcards.change_pack(%Pack{})
+
+    {:noreply,
+     socket
+     |> assign(:form, to_form(changeset))
+     |> assign(:editing_id, nil)
+     |> assign(:show_modal, true)}
+  end
+
   def handle_event("edit", %{"id" => id}, socket) do
     pack = Flashcards.get_pack!(id)
     changeset = Flashcards.change_pack(pack)
@@ -39,7 +50,8 @@ defmodule FlashcardQuizWeb.PacksLive do
     {:noreply,
      socket
      |> assign(:form, to_form(changeset))
-     |> assign(:editing_id, String.to_integer(id))}
+     |> assign(:editing_id, String.to_integer(id))
+     |> assign(:show_modal, true)}
   end
 
   def handle_event("cancel", _params, socket) do
@@ -48,7 +60,8 @@ defmodule FlashcardQuizWeb.PacksLive do
     {:noreply,
      socket
      |> assign(:form, to_form(changeset))
-     |> assign(:editing_id, nil)}
+     |> assign(:editing_id, nil)
+     |> assign(:show_modal, false)}
   end
 
   def handle_event("delete", %{"id" => id}, socket) do
@@ -64,6 +77,16 @@ defmodule FlashcardQuizWeb.PacksLive do
      |> put_flash(:info, "Pack deleted successfully")}
   end
 
+  def handle_event("close_modal", _params, socket) do
+    changeset = Flashcards.change_pack(%Pack{})
+
+    {:noreply,
+     socket
+     |> assign(:form, to_form(changeset))
+     |> assign(:editing_id, nil)
+     |> assign(:show_modal, false)}
+  end
+
   defp create_pack(socket, pack_params) do
     case Flashcards.create_pack(pack_params) do
       {:ok, _pack} ->
@@ -75,6 +98,7 @@ defmodule FlashcardQuizWeb.PacksLive do
          |> assign(:form, to_form(changeset))
          |> assign(:packs, packs)
          |> assign(:packs_empty?, false)
+         |> assign(:show_modal, false)
          |> put_flash(:info, "Pack created successfully")}
 
       {:error, %Ecto.Changeset{} = changeset} ->
@@ -95,6 +119,7 @@ defmodule FlashcardQuizWeb.PacksLive do
          |> assign(:form, to_form(changeset))
          |> assign(:packs, packs)
          |> assign(:editing_id, nil)
+         |> assign(:show_modal, false)
          |> put_flash(:info, "Pack updated successfully")}
 
       {:error, %Ecto.Changeset{} = changeset} ->

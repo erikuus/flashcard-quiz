@@ -37,3 +37,4 @@ npm-debug.log
 
 *.db-shm
 *.db-wal
+flashcard_quiz_dev.db-shm

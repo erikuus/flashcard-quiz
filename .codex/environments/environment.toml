@@ -6,6 +6,6 @@ name = "flashcard-quiz"
 script = ""
 
 [[actions]]
-name = "Run"
+name = "Run 4001"
 icon = "run"
 command = "PORT=4001 mix phx.server"
